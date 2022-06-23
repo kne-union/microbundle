@@ -32,7 +32,7 @@
 
 ## 🔧 Installation & Setup <a name="setup"></a> <a name="installation"></a>
 
-1️⃣ **Install** by running: `npm i -D microbundle`
+1️⃣ **Install** by running: `npm i -D @kne/microbundle`
 
 2️⃣ **Set up** your `package.json`:
 
