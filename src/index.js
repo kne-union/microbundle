@@ -39,6 +39,8 @@ import {
 import { getConfigFromPkgJson, getName } from './lib/package-info';
 import { shouldCssModules, cssModulesConfig } from './lib/css-modules';
 import { EOL } from 'os';
+import svgr from '@svgr/rollup';
+import smartAsset from 'rollup-plugin-smart-asset';
 
 // Extensions to use when resolving modules
 const EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.es6', '.es', '.mjs'];
@@ -507,6 +509,10 @@ function createConfig(options, entry, format, writeMeta) {
 							// resolve: EXTENSIONS,
 							entries: moduleAliases,
 						}),
+					smartAsset({
+						url: 'copy',
+						keepImport: true,
+					}),
 					nodeResolve({
 						mainFields: ['module', 'jsnext', 'main'],
 						browser: options.target !== 'node',
@@ -522,6 +528,7 @@ function createConfig(options, entry, format, writeMeta) {
 						requireReturnsDefault: 'namespace',
 					}),
 					json(),
+					svgr(),
 					{
 						// We have to remove shebang so it doesn't end up in the middle of the code somewhere
 						transform: code => ({

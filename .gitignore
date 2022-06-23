@@ -13,3 +13,4 @@ yarn.lock
 .rts2*
 sizes.csv
 test/fixtures/visualizer/stats.html
+package-lock.json
