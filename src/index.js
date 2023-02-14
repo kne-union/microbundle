@@ -6,6 +6,7 @@ import { blue, yellow, red } from 'kleur';
 import { map, series } from 'asyncro';
 import glob from 'tiny-glob/sync';
 import autoprefixer from 'autoprefixer';
+import postCopy from 'postcss-copy';
 import { rollup, watch } from 'rollup';
 import builtinModules from 'builtin-modules';
 import resolveFrom from 'resolve-from';
@@ -197,8 +198,8 @@ async function jsOrTs(cwd, filename) {
 	const extension = (await isFile(resolve(cwd, filename + '.ts')))
 		? '.ts'
 		: (await isFile(resolve(cwd, filename + '.tsx')))
-			? '.tsx'
-			: '.js';
+		? '.tsx'
+		: '.js';
 
 	return resolve(cwd, `${filename}${extension}`);
 }
@@ -211,13 +212,13 @@ async function getInput({ entries, cwd, source, module }) {
 			entries && entries.length
 				? entries
 				: (source &&
-					(Array.isArray(source) ? source : [source]).map(file =>
-						resolve(cwd, file),
-					)) ||
-				((await isDir(resolve(cwd, 'src'))) &&
-					(await jsOrTs(cwd, 'src/index'))) ||
-				(await jsOrTs(cwd, 'index')) ||
-				module,
+						(Array.isArray(source) ? source : [source]).map(file =>
+							resolve(cwd, file),
+						)) ||
+						((await isDir(resolve(cwd, 'src'))) &&
+							(await jsOrTs(cwd, 'src/index'))) ||
+						(await jsOrTs(cwd, 'index')) ||
+						module,
 		)
 		.map(file => glob(file))
 		.forEach(file => input.push(...file));
@@ -300,16 +301,16 @@ function getMain({ options, entry, format }) {
 		pkg.module && !pkg.module.match(/src\//)
 			? pkg.module
 			: pkg['jsnext:main'] || pkgTypeModule
-				? 'x.esm.js'
-				: 'x.esm.mjs',
+			? 'x.esm.js'
+			: 'x.esm.mjs',
 		mainNoExtension,
 	);
 
 	mainsByFormat.modern = replaceName(
 		(pkg.exports && walk(pkg.exports, pkgTypeModule)) ||
-		(pkg.syntax && pkg.syntax.esmodules) ||
-		pkg.esmodule ||
-		pkgTypeModule
+			(pkg.syntax && pkg.syntax.esmodules) ||
+			pkg.esmodule ||
+			pkgTypeModule
 			? 'x.modern.js'
 			: 'x.modern.mjs',
 		mainNoExtension,
@@ -427,8 +428,7 @@ function createConfig(options, entry, format, writeMeta) {
 					nameCache.minify,
 				);
 			}
-		} catch (e) {
-		}
+		} catch (e) {}
 	}
 
 	loadNameCache();
@@ -476,9 +476,9 @@ function createConfig(options, entry, format, writeMeta) {
 				if (warning.code === 'UNRESOLVED_IMPORT') {
 					stdout(
 						`Failed to resolve the module ${warning.source} imported by ${warning.importer}` +
-						`\nIs the module installed? Note:` +
-						`\n ↳ to inline a module into your bundle, install it to "devDependencies".` +
-						`\n ↳ to depend on a module via import/require, install it to "dependencies".`,
+							`\nIs the module installed? Note:` +
+							`\n ↳ to inline a module into your bundle, install it to "devDependencies".` +
+							`\n ↳ to depend on a module via import/require, install it to "dependencies".`,
 					);
 					return;
 				}
@@ -493,10 +493,9 @@ function createConfig(options, entry, format, writeMeta) {
 			plugins: []
 				.concat(
 					postcss({
-						plugins: [autoprefixer()],
+						plugins: [autoprefixer(), postCopy({ dest: outputDir })],
 						autoModules: shouldCssModules(options),
-						modules: cssModulesConfig(options),
-						// only write out CSS for the first bundle (avoids pointless extra files):
+						modules: cssModulesConfig(options), // only write out CSS for the first bundle (avoids pointless extra files):
 						inject: false,
 						extract:
 							!!writeMeta &&
@@ -506,11 +505,11 @@ function createConfig(options, entry, format, writeMeta) {
 						sourceMap: options.sourcemap && options.css !== 'inline',
 					}),
 					moduleAliases.length > 0 &&
-					alias({
-						// @TODO: this is no longer supported, but didn't appear to be required?
-						// resolve: EXTENSIONS,
-						entries: moduleAliases,
-					}),
+						alias({
+							// @TODO: this is no longer supported, but didn't appear to be required?
+							// resolve: EXTENSIONS,
+							entries: moduleAliases,
+						}),
 					smartAsset({
 						url: 'copy',
 						useHash: true,
@@ -520,8 +519,7 @@ function createConfig(options, entry, format, writeMeta) {
 					nodeResolve({
 						mainFields: ['module', 'jsnext', 'main'],
 						browser: options.target !== 'node',
-						exportConditions: [options.target === 'node' ? 'node' : 'browser'],
-						// defaults + .jsx
+						exportConditions: [options.target === 'node' ? 'node' : 'browser'], // defaults + .jsx
 						extensions: ['.mjs', '.js', '.jsx', '.json', '.node'],
 						preferBuiltins: options.target === 'node',
 					}),
@@ -543,56 +541,54 @@ function createConfig(options, entry, format, writeMeta) {
 						}),
 					},
 					(useTypescript || emitDeclaration) &&
-					typescript({
-						cwd: options.cwd,
-						typescript: require(resolveFrom.silent(
-							options.cwd,
-							'typescript',
-						) || 'typescript'),
-						cacheRoot: `./node_modules/.cache/.rts2_cache_${format}`,
-						useTsconfigDeclarationDir: true,
-						tsconfigDefaults: {
-							compilerOptions: {
-								sourceMap: options.sourcemap,
-								declaration: options.generateTypes !== false,
-								allowJs: true,
-								emitDeclarationOnly: options.generateTypes && !useTypescript,
-								...(options.generateTypes !== false && {
-									declarationDir: getDeclarationDir({ options, pkg }),
-								}),
-								jsx: 'preserve',
-								jsxFactory: options.jsx,
-								jsxFragmentFactory: options.jsxFragment,
+						typescript({
+							cwd: options.cwd,
+							typescript: require(resolveFrom.silent(
+								options.cwd,
+								'typescript',
+							) || 'typescript'),
+							cacheRoot: `./node_modules/.cache/.rts2_cache_${format}`,
+							useTsconfigDeclarationDir: true,
+							tsconfigDefaults: {
+								compilerOptions: {
+									sourceMap: options.sourcemap,
+									declaration: options.generateTypes !== false,
+									allowJs: true,
+									emitDeclarationOnly: options.generateTypes && !useTypescript,
+									...(options.generateTypes !== false && {
+										declarationDir: getDeclarationDir({ options, pkg }),
+									}),
+									jsx: 'preserve',
+									jsxFactory: options.jsx,
+									jsxFragmentFactory: options.jsxFragment,
+								},
+								files: options.entries,
 							},
-							files: options.entries,
-						},
-						tsconfig: options.tsconfig,
-						tsconfigOverride: {
-							compilerOptions: {
-								module: 'ESNext',
-								target: 'esnext',
+							tsconfig: options.tsconfig,
+							tsconfigOverride: {
+								compilerOptions: {
+									module: 'ESNext',
+									target: 'esnext',
+								},
 							},
-						},
-					}),
-					// if defines is not set, we shouldn't run babel through node_modules
+						}), // if defines is not set, we shouldn't run babel through node_modules
 					isTruthy(defines) &&
-					babel({
-						babelHelpers: 'bundled',
-						babelrc: false,
-						compact: false,
-						configFile: false,
-						include: 'node_modules/**',
-						plugins: [
-							[
-								require.resolve('babel-plugin-transform-replace-expressions'),
-								{ replace: defines },
+						babel({
+							babelHelpers: 'bundled',
+							babelrc: false,
+							compact: false,
+							configFile: false,
+							include: 'node_modules/**',
+							plugins: [
+								[
+									require.resolve('babel-plugin-transform-replace-expressions'),
+									{ replace: defines },
+								],
 							],
-						],
-					}),
+						}),
 					customBabel()({
 						babelHelpers: 'bundled',
-						extensions: EXTENSIONS,
-						// use a regex to make sure to exclude eventual hoisted packages
+						extensions: EXTENSIONS, // use a regex to make sure to exclude eventual hoisted packages
 						exclude: /\/node_modules\//,
 						passPerPreset: true, // @see https://babeljs.io/docs/en/options#passperpreset
 						custom: {
@@ -611,8 +607,7 @@ function createConfig(options, entry, format, writeMeta) {
 							compress: Object.assign(
 								{
 									keep_infinity: true,
-									pure_getters: true,
-									// Ideally we'd just get Terser to respect existing Arrow functions...
+									pure_getters: true, // Ideally we'd just get Terser to respect existing Arrow functions...
 									// unsafe_arrows: true,
 									passes: 10,
 								},
@@ -638,27 +633,23 @@ function createConfig(options, entry, format, writeMeta) {
 						}),
 						nameCache && {
 							// before hook
-							options: loadNameCache,
-							// after hook
+							options: loadNameCache, // after hook
 							writeBundle() {
 								if (writeMeta && nameCache) {
 									let filename = getNameCachePath();
 									let json = JSON.stringify(nameCache, null, 2);
 									if (endsWithNewLine) json += EOL;
-									fs.writeFile(filename, json, () => {
-									});
+									fs.writeFile(filename, json, () => {});
 								}
 							},
 						},
 					],
-					options.visualize && visualizer(),
-					// NOTE: OMT only works with amd and esm
+					options.visualize && visualizer(), // NOTE: OMT only works with amd and esm
 					// Source: https://github.com/surma/rollup-plugin-off-main-thread#config
 					useWorkerLoader && (format === 'es' || modern) && OMT(),
 					/** @type {import('rollup').Plugin} */
 					({
-						name: 'postprocessing',
-						// Rollup 2 injects globalThis, which is nice, but doesn't really make sense for Microbundle.
+						name: 'postprocessing', // Rollup 2 injects globalThis, which is nice, but doesn't really make sense for Microbundle.
 						// Only ESM environments necessitate globalThis, and UMD bundles can't be properly loaded as ESM.
 						// So we remove the globalThis check, replacing it with `this||self` to match Rollup 1's output:
 						renderChunk(code, chunk, opts) {
@@ -675,8 +666,7 @@ function createConfig(options, entry, format, writeMeta) {
 								);
 								return { code, map: null };
 							}
-						},
-						// Grab size info before writing files to disk:
+						}, // Grab size info before writing files to disk:
 						writeBundle(_, bundle) {
 							config._sizeInfo = Promise.all(
 								Object.values(bundle).map(({ code, fileName }) => {
