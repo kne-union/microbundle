@@ -511,7 +511,7 @@ function createConfig(options, entry, format, writeMeta) {
 							entries: moduleAliases,
 						}),
 					smartAsset({
-						url: 'copy',
+						url: options.assertType || 'copy',
 						useHash: true,
 						keepName: true,
 						keepImport: true,
