@@ -20,7 +20,7 @@ export function cssModulesConfig(options) {
 	if (shouldCssModules(options) || hasPassedInScopeName) {
 		let generateScopedName = isWatchMode
 			? '_[name]__[local]__[hash:base64:5]'
-			: '_[hash:base64:5]';
+			: '_[name]_[hash:base64:5]';
 
 		if (hasPassedInScopeName) {
 			generateScopedName = passedInOption; // would be the string from --css-modules "_[hash]".
