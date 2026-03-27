@@ -18,9 +18,16 @@ export function cssModulesConfig(options) {
 	);
 
 	if (shouldCssModules(options) || hasPassedInScopeName) {
+		// Get package name and format it for CSS class names
+		const packageName = options.pkg?.name || '';
+		const packagePrefix = packageName
+			.replace(/[^a-zA-Z0-9_-]/g, '-') // Replace invalid chars with hyphen
+			.replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
+			.toLowerCase(); // Convert to lowercase
+
 		let generateScopedName = isWatchMode
-			? '_[name]__[local]__[hash:base64:5]'
-			: '_[name]_[hash:base64:5]';
+			? `${packagePrefix}_[name]__[local]__[hash:base64:5]`
+			: `${packagePrefix}_[hash:base64:5]`;
 
 		if (hasPassedInScopeName) {
 			generateScopedName = passedInOption; // would be the string from --css-modules "_[hash]".
